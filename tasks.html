@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Звіт | Завдання та результати</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <div class="nav-links">
+            <a href="index.html">Головна</a>
+            <a href="about.html">Про місце практики</a>
+            <div class="dropdown">
+                <a href="tasks.html" class = "active">Завдання ▾</a>
+                <div class="dropdown-content">
+                    <a href="multithreading.html">Багатопоточність</a>
+                    <a href="mysql.html">MySQL</a>
+                    <a href="xml-json.html">XML та JSON</a>
+                </div>
+            </div>
+            <a href="conclusion.html">Висновки</a>
+        </div>
+    </nav>
+
+    <main>
+        <h2>Виконані завдання</h2>
+        <p>Головним завданням навчальної практики було проходження спеціалізованого курсу для підвищення кваліфікації. Я обрав курс із розробки мовою C#, у межах якого було успішно виконано такі практичні завдання:</p>
+        <div class="grid-container">
+            <div class="card">
+                <h3>1. Багатопоточність у C#</h3>
+                <p>Розроблено програмні рішення з використанням сучасних патернів асинхронного програмування (async/await). Реалізовано потокобезпечну синхронізацію даних, розпаралелювання обчислень та ефективний розподіл ресурсів, що дозволило суттєво підвищити продуктивність застосунків.</p>
+                <div class="next-btn-wrapper" style="text-align: end;">
+                    <a href="multithreading.html" style="font-size: 1.0rem;" class="next-btn">Детальніше</a>
+                </div>
+            </div>
+            <div class="card">
+                <h3>2. Інтеграція MySQL та ШІ</h3>
+                <p>Спроектовано та оптимізовано реляційні бази даних, написано складні SQL-запити для швидкого доступу до інформації. Налаштовано безшовну взаємодію БД із застосунками. Крім того, успішно інтегровано та досліджено роботу з нейронними мережами для обробки даних.</p>
+                <div class="next-btn-wrapper" style="text-align: end;">
+                    <a href="mysql.html" style="font-size: 1.0rem;" class="next-btn">Детальніше</a>
+                </div>
+            </div>
+            <div class="card">
+                <h3>3. Робота з XML та JSON</h3>
+                <p>Налаштовано процеси серіалізації та десеріалізації складних структур даних. Реалізовано надійні алгоритми генерації, парсингу та валідації JSON/XML файлів для забезпечення коректного обміну інформацією між різними компонентами системи та зовнішніми API.</p>
+                <div class="next-btn-wrapper" style="text-align: end;">
+                    <a href="xml-json.html" style="font-size: 1.0rem;" class="next-btn">Детальніше</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="next-btn-wrapper">
+        <a href="multithreading.html" class="next-btn">Далі <span>&rarr;</span></a>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

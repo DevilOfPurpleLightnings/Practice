@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Звіт | MySql</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <link href="prism.css" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <div class="nav-links">
+            <a href="index.html">Головна</a>
+            <a href="about.html">Про місце практики</a>
+            <div class="dropdown">
+                <a href="tasks.html" class="active">Завдання ▾</a>
+                <div class="dropdown-content">
+                    <a href="multithreading.html">Багатопоточність</a>
+                    <a href="mysql.html">MySQL</a>
+                    <a href="xml-json.html">XML та JSON</a>
+                </div>
+            </div>
+            <a href="conclusion.html">Висновки</a>
+        </div>
+    </nav>
+    
+    <main>
+        <section class="content">
+            <h2>Xml та Json</h2>
+
+            <h3 style="font-size: 2.0rem;">XML</h3>
+
+            <div class="text-block">
+                <p>
+                    У даному розділі було виконано серію практичних завдань із використання XML для опису структурованих даних.
+                    Основною метою роботи було закріплення навичок створення XML-документів, використання елементів і атрибутів,
+                    роботи з просторами імен (namespace), а також формування вкладених структур даних.
+                </p>
+            </div>
+
+            <div class="text-block">
+                <h3>Базова структура XML-документа</h3>
+                <p>Було створено простий XML-документ із атрибутами книги.</p>
+            </div>
+
+            <div class="code-window">
+                <div class="code-header">
+                    <div class="mac-dots"><span></span><span></span><span></span></div>
+                    <span class="language-label">XML</span>
+                </div>
+                <pre><code class="language-xml">&lt;book xmlns="http://www.contoso.com/book"
+    title="Pride And Prejudice"
+    price="24.95"
+    genre="novel"
+    isbn="1-861001-57-8"
+    publicationDate="1823-01-28" /&gt;</code></pre>
+            </div>
+
+            <div class="text-block">
+                <h3>Елементна структура</h3>
+                <p>Було реалізовано вкладені елементи для більш гнучкої структури.</p>
+            </div>
+
+            <div class="code-window">
+                <div class="code-header">
+                    <div class="mac-dots"><span></span><span></span><span></span></div>
+                    <span class="language-label">XML</span>
+                </div>
+                <pre><code class="language-xml">&lt;book xmlns="http://www.contoso.com/book"&gt;
+    &lt;title&gt;Pride And Prejudice&lt;/title&gt;
+    &lt;price&gt;24.95&lt;/price&gt;
+    &lt;genre&gt;novel&lt;/genre&gt;
+    &lt;isbn&gt;1-861001-57-8&lt;/isbn&gt;
+    &lt;publicationDate&gt;1823-01-28&lt;/publicationDate&gt;
+&lt;/book&gt;</code></pre>
+            </div>
+
+            <h3 style="font-size: 2.0rem;">XML Serialization Basics</h3>
+
+            <div class="text-block">
+                <p>
+                    Було розглянуто серіалізацію об’єктів у XML за допомогою System.Xml.Serialization,
+                    включаючи налаштування елементів, атрибутів і порядку даних.
+                </p>
+            </div>
+
+            <div class="code-window">
+                <div class="code-header">
+                    <div class="mac-dots"><span></span><span></span><span></span></div>
+                    <span class="language-label">C#</span>
+                </div>
+                <pre><code class="language-csharp">public class BookInfo
+{
+    public string? Title { get; set; }
+    public decimal Price { get; set; }
+    public string? Genre { get; set; }
+    public string? Isbn { get; set; }
+    public string? PublicationDate { get; set; }
+}</code></pre>
+            </div>
+
+            <!-- ================= JSON ================= -->
+
+            <h3 style="font-size: 2.0rem; margin-top: 40px;">JSON</h3>
+
+            <div class="text-block">
+                <p>
+                    У даному розділі було розглянуто основи JSON-серіалізації в .NET з використанням
+                    System.Text.Json. Основною метою було навчитися керувати структурою JSON-об’єктів
+                    та налаштовувати їх вигляд при серіалізації.
+                </p>
+            </div>
+
+            <div class="text-block">
+                <h3>Керування назвами та порядком</h3>
+                <p>
+                    Для зміни назв властивостей використано <code>JsonPropertyName</code>,
+                    а для порядку — <code>JsonPropertyOrder</code>.
+                </p>
+            </div>
+
+            <div class="code-window">
+                <div class="code-header">
+                    <div class="mac-dots"><span></span><span></span><span></span></div>
+                    <span class="language-label">C#</span>
+                </div>
+                <pre><code class="language-csharp">[JsonPropertyName("employee_name")]
+[JsonPropertyOrder(4)]
+public string? Name { get; set; }
+
+[JsonPropertyName("employee_id")]
+[JsonPropertyOrder(1)]
+public int Id { get; set; }</code></pre>
+            </div>
+
+            <div class="text-block">
+                <h3>Ігнорування властивостей</h3>
+                <p>
+                    Атрибут <code>JsonIgnore</code> використовується для виключення полів із JSON.
+                </p>
+            </div>
+
+            <div class="code-window">
+                <div class="code-header">
+                    <div class="mac-dots"><span></span><span></span><span></span></div>
+                    <span class="language-label">C#</span>
+                </div>
+                <pre><code class="language-csharp">[JsonIgnore]
+public string? IgnoreProperty { get; set; }</code></pre>
+            </div>
+
+            <div class="text-block">
+                <h3>Серіалізація та десеріалізація</h3>
+                <p>
+                    Для перетворення об’єктів у JSON використовується JsonSerializer.
+                </p>
+            </div>
+
+            <div class="code-window">
+                <div class="code-header">
+                    <div class="mac-dots"><span></span><span></span><span></span></div>
+                    <span class="language-label">C#</span>
+                </div>
+                <pre><code class="language-csharp">string json = JsonSerializer.Serialize(employee);
+Employee? obj = JsonSerializer.Deserialize<Employee>(json);</code></pre>
+            </div>
+
+        </section>
+    </main>
+
+    <div class="next-btn-wrapper">
+        <a href="conclusion.html" class="next-btn">Далі <span>&rarr;</span></a>
+    </div>
+
+    <script src="prism.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

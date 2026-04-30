@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Звіт | Багатопоточність</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <link href="prism.css" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav>
+        <div class="nav-links">
+            <a href="index.html">Головна</a>
+            <a href="about.html">Про місце практики</a>
+            <div class="dropdown">
+                <a href="tasks.html" class = "active">Завдання ▾</a>
+                <div class="dropdown-content">
+                    <a href="multithreading.html">Багатопоточність</a>
+                    <a href="mysql.html">MySQL</a>
+                    <a href="xml-json.html">XML та JSON</a>
+                </div>
+            </div>
+            <a href="conclusion.html">Висновки</a>
+        </div>
+    </nav>
+    
+    <main>
+        <section class="content">
+            <h2>Багатопоточність</h2>
+            <div class="text-block">
+                <p>Для вирішення проблеми правильної синхронізації та ефективного розподілу ресурсів я реалізував кілька варіантів алгоритму «Решето Ератосфена». Нижче наведено порівняння класичного підходу та різних методів декомпозиції задач у C#.</p>
+            </div>
+
+            <div class="text-block">
+                <h3 style="margin-top: 30px;">Послідовний алгоритм (Еталонна реалізація)</h3>
+                <p>Класичне виконання в одному потоці. Створюється масив, де послідовно викреслюються всі числа, кратні знайденим простим. Цей метод містить мікрооптимізацію (одноразове обчислення <code>Math.Sqrt</code>) і слугує базовою лінією (baseline) для оцінки швидкості паралельних версій.</p>
+            </div>
+            
+            <div class="code-window">
+                <div class="code-header">
+                    <div class="mac-dots"><span></span><span></span><span></span></div>
+                    <span class="language-label">C#</span>
+                </div>
+                <pre><code class="language-csharp">public static IEnumerable&lt;int&gt; GetPrimeNumbersModifiedSequentialAlgorithm(int n)
+{
+    ArgumentOutOfRangeException.ThrowIfNegativeOrZero(n);
+    if (n &lt; 2) return Enumerable.Empty&lt;int&gt;();
+
+    bool[] isPrime = new bool[n + 1];
+    Array.Fill(isPrime, true);
+    isPrime[0] = false;
+    isPrime[1] = false;
+
+    int limit = (int)Math.Sqrt(n);
+
+    for (int p = 2; p &lt;= limit; p++)
+    {
+        if (isPrime[p])
+        {
+            for (int i = p * p; i &lt;= n; i += p)
+                isPrime[i] = false;
+        }
+    }
+
+    return Enumerable.Range(2, n - 1).Where(i =&gt; isPrime[i]);
+}</code></pre>
+            </div>
+
+            <div class="text-block">
+                <h3 style="margin-top: 40px;">Декомпозиція за даними (TPL)</h3>
+                <p>Розпаралелювання внутрішнього циклу за допомогою <code>Parallel.For</code>. Оскільки динамічно задати крок циклу в TPL неможливо, незалежність ітерацій забезпечується простою перевіркою залишку від ділення (<code>i % p == 0</code>).</p>
+            </div>
+            
+            <div class="code-window">
+                <div class="code-header">
+                    <div class="mac-dots"><span></span><span></span><span></span></div>
+                    <span class="language-label">C#</span>
+                </div>
+                <pre><code class="language-csharp">public static IEnumerable&lt;int&gt; GetPrimeNumbersConcurrentDataDecomposition(int n)
+{
+    int limit = (int)Math.Sqrt(n);
+
+    for (int p = 2; p &lt;= limit; p++)
+    {
+        if (isPrime[p])
+        {
+            Parallel.For(p * p, n + 1, i =&gt;
+            {
+                if (i % p == 0)
+                {
+                    isPrime[i] = false;
+                }
+            });
+        }
+    }
+
+    return Enumerable.Range(2, n - 1).Where(i =&gt; isPrime[i]);
+}</code></pre>
+            </div>
+
+            <div class="text-block">
+                <h3 style="margin-top: 40px;">Декомпозиція за базовими простими числами</h3>
+                <p>Використання <code>Parallel.ForEach</code>, де кожен потік отримує своє базове просте число і викреслює кратні йому. Всі потоки вільно пишуть у спільний масив — це створює "безпечний" стан гонитви (race condition), що дозволяє уникнути ресурсомістких блокувань (<code>lock</code>).</p>
+            </div>
+            
+            <div class="code-window">
+                <div class="code-header">
+                    <div class="mac-dots"><span></span><span></span><span></span></div>
+                    <span class="language-label">C#</span>
+                </div>
+                <pre><code class="language-csharp">public static IEnumerable&lt;int&gt; GetPrimeNumbersConcurrentBasicPrimesDecomposition(int n)
+{
+    int limit = (int)Math.Sqrt(n);
+    var basePrimes = GetPrimeNumbersSequentialAlgorithm(limit).ToArray();
+
+    bool[] isPrime = new bool[n + 1];
+    Array.Fill(isPrime, true);
+    isPrime[0] = false; isPrime[1] = false;
+
+    Parallel.ForEach(basePrimes, p =&gt;
+    {
+        for (int i = p * p; i &lt;= n; i += p)
+        {
+            isPrime[i] = false;
+        }
+    });
+
+    return Enumerable.Range(2, n - 1).Where(i =&gt; isPrime[i]);
+}</code></pre>
+            </div>
+
+            <div class="text-block">
+                <h3 style="margin-top: 40px;">Низькорівневе управління (ThreadPool)</h3>
+                <p>Ручне керування пулом потоків замість високорівневих абстракцій. Кожне завдання відправляється в <code>ThreadPool</code>. Для правильної синхронізації (щоб головний потік не повернув результат завчасно) застосовується примітив синхронізації <code>CountdownEvent</code>.</p>
+            </div>
+            
+            <div class="code-window">
+                <div class="code-header">
+                    <div class="mac-dots"><span></span><span></span><span></span></div>
+                    <span class="language-label">C#</span>
+                </div>
+                <pre><code class="language-csharp">public static IEnumerable&lt;int&gt; GetPrimeNumbersConcurrentWithThreadPool(int n)
+{
+    int limit = (int)Math.Sqrt(n);
+    using var countdown = new CountdownEvent(limit - 1);
+
+    for (int p = 2; p &lt;= limit; p++)
+    {
+        int prime = p;
+        ThreadPool.QueueUserWorkItem(_ =&gt;
+        {
+            try
+            {
+                if (isPrime[prime])
+                {
+                    for (int i = prime * prime; i &lt;= n; i += prime)
+                        isPrime[i] = false;
+                }
+            }
+            finally
+            {
+                countdown.Signal(); // Звітуємо про завершення
+            }
+        });
+    }
+
+    countdown.Wait();
+    return Enumerable.Range(2, n - 1).Where(i =&gt; isPrime[i]);
+}</code></pre>
+            </div>
+        </section>
+    </main>
+
+    <div class="next-btn-wrapper">
+        <a href="mysql.html" class="next-btn">Далі <span>&rarr;</span></a>
+    </div>
+
+    <script src="prism.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

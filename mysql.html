@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Звіт | MySql</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <link href="prism.css" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <nav>
+        <div class="nav-links">
+            <a href="index.html">Головна</a>
+            <a href="about.html">Про місце практики</a>
+            <div class="dropdown">
+                <a href="tasks.html" class="active">Завдання ▾</a>
+                <div class="dropdown-content">
+                    <a href="multithreading.html">Багатопоточність</a>
+                    <a href="mysql.html">MySQL</a>
+                    <a href="xml-json.html">XML та JSON</a>
+                </div>
+            </div>
+            <a href="conclusion.html">Висновки</a>
+        </div>
+    </nav>
+
+    <main>
+        <section class="content">
+            <h2>MySql</h2>
+
+            <div class="text-block">
+                <p>
+                    Для закріплення навичок роботи з реляційними базами даних я виконав серію SQL-запитів. У процесі роботи було використано вибірки даних, вкладені підзапити та механізми сортування результатів.
+                </p>
+            </div>
+
+            <div class="text-block">
+                <h3>Робота з базовими вибірками</h3>
+                <p>
+                    На першому етапі було виконано запити для отримання даних із використанням підзапитів.
+                    Зокрема, визначались міста без вулиць, категорії товарів із продажами та товари,
+                    ціна яких перевищує середню у своїй категорії.
+                </p>
+            </div>
+
+            <div class="code-window">
+                <div class="code-header">
+                    <div class="mac-dots"><span></span><span></span><span></span></div>
+                    <span class="language-label">SQL</span>
+                </div>
+                <pre><code class="language-sql">-- Міста без вулиць
+SELECT id, name
+FROM city c
+WHERE NOT EXISTS (
+    SELECT 1 FROM street s WHERE s.city_id = c.id
+)
+ORDER BY name ASC;
+
+-- Категорії, де всі товари мають покупки
+SELECT pc.id, pc.name
+FROM product_category pc
+WHERE EXISTS (
+    SELECT 1 FROM product_title pt WHERE pt.product_category_id = pc.id
+)
+AND NOT EXISTS (
+    SELECT 1
+    FROM product_title pt
+    JOIN product p ON p.product_title_id = pt.id
+    WHERE pt.product_category_id = pc.id
+    AND NOT EXISTS (
+        SELECT 1 FROM order_details od WHERE od.product_id = p.id
+    )
+)
+ORDER BY pc.id ASC;
+
+-- Товари дорожчі за середню ціну в категорії
+SELECT 
+    p.id, 
+    CAST(p.comment AS CHAR) AS title, 
+    p.price
+FROM product p
+JOIN product_title pt ON p.product_title_id = pt.id
+WHERE p.price > (
+    SELECT AVG(p2.price)
+    FROM product p2
+    JOIN product_title pt2 ON p2.product_title_id = pt2.id
+    WHERE pt2.product_category_id = pt.product_category_id
+)
+ORDER BY p.id ASC;</code></pre>
+            </div>
+
+            <div class="text-block">
+                <h3>Аналіз покупок клієнтів</h3>
+                <p>
+                    Далі було реалізовано запит для визначення клієнтів із середнім чеком понад 70.
+                    Для цього застосовано агрегатні функції та групування даних.
+                </p>
+            </div>
+
+            <div class="code-window">
+                <div class="code-header">
+                    <div class="mac-dots"><span></span><span></span><span></span></div>
+                    <span class="language-label">SQL</span>
+                </div>
+                <pre><code class="language-sql">SELECT 
+    p.name, 
+    p.surname, 
+    SUM(od.product_amount * od.price_with_discount) / COUNT(DISTINCT od.customer_order_id) AS avg_purchase,
+    SUM(od.product_amount * od.price_with_discount) AS sum_purchase
+FROM customer c
+LEFT JOIN person p ON c.person_id = p.id
+JOIN customer_order co ON co.customer_id = c.person_id OR (co.customer_id IS NULL AND c.person_id IS NULL)
+JOIN order_details od ON od.customer_order_id = co.id
+GROUP BY p.name, p.surname
+HAVING avg_purchase > 70
+ORDER BY sum_purchase ASC, p.surname ASC;</code></pre>
+            </div>
+
+            <div class="text-block">
+                <h3>Аналіз впливу знижок</h3>
+                <p>
+                    Було досліджено вплив знижок на кількість продажів. 
+                    Порівнювалась кількість товарів, проданих зі знижкою понад 5% та без неї.
+                </p>
+            </div>
+
+            <div class="code-window">
+                <div class="code-header">
+                    <div class="mac-dots"><span></span><span></span><span></span></div>
+                    <span class="language-label">SQL</span>
+                </div>
+                <pre><code class="language-sql">SELECT 
+    p.id, 
+    pt.title,
+    SUM(CASE WHEN (od.price - od.price_with_discount) > od.price * 0.05 
+        THEN od.product_amount ELSE 0 END) AS count_with_discount_5,
+    SUM(CASE WHEN (od.price - od.price_with_discount) <= od.price * 0.05 
+        THEN od.product_amount ELSE 0 END) AS count_without_discount_5,
+    ROUND(
+        (
+            SUM(CASE WHEN (od.price - od.price_with_discount) > od.price * 0.05 THEN od.product_amount ELSE 0 END) -
+            SUM(CASE WHEN (od.price - od.price_with_discount) <= od.price * 0.05 THEN od.product_amount ELSE 0 END)
+        ) * 100.0 /
+        NULLIF(SUM(CASE WHEN (od.price - od.price_with_discount) <= od.price * 0.05 THEN od.product_amount ELSE 0 END), 0)
+    , 2) AS difference
+FROM product p
+JOIN product_title pt ON p.product_title_id = pt.id
+LEFT JOIN order_details od ON od.product_id = p.id
+GROUP BY p.id, pt.title
+ORDER BY p.id ASC;</code></pre>
+            </div>
+
+            <div class="text-block">
+                <h3>Визначення провідних виробників</h3>
+                <p>
+                    Завершальним етапом стало визначення виробника, продукція якого продається найкраще
+                    для кожного типу товару.
+                </p>
+            </div>
+
+            <div class="code-window">
+                <div class="code-header">
+                    <div class="mac-dots"><span></span><span></span><span></span></div>
+                    <span class="language-label">SQL</span>
+                </div>
+                <pre><code class="language-sql">SELECT 
+    pt.id AS product_id,
+    pt.title,
+    m.id AS manufacturer_id,
+    m.name AS manufacturer
+FROM product_title pt
+LEFT JOIN manufacturer m ON m.id = (
+    SELECT p.manufacturer_id
+    FROM product p
+    JOIN order_details od ON p.id = od.product_id
+    WHERE p.product_title_id = pt.id
+    GROUP BY p.manufacturer_id
+    ORDER BY SUM(od.product_amount) DESC
+    LIMIT 1
+)
+ORDER BY pt.id ASC;</code></pre>
+            </div>
+
+        </section>
+    </main>
+
+    <div class="next-btn-wrapper">
+        <a href="xml-json.html" class="next-btn">Далі <span>&rarr;</span></a>
+    </div>
+
+    <script src="prism.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
